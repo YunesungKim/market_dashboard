@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; background: #fafafa; color: #1a1a1a; }
+header h1 { font-size: 1.3rem; }
+.cards { display: grid; grid-template-columns: 1fr; gap: .75rem; }
+.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem; cursor: pointer; }
+.card .date { font-size: .8rem; color: #888; }
+.card h2 { font-size: 1.05rem; margin: .3rem 0; }
+.card p { margin: 0; color: #444; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
+.modal.hidden { display: none; }
+.modal-body { background: #fff; border-radius: 12px; padding: 1.25rem; width: 100%; height: 100%; overflow: auto; position: relative; }
+.close { position: absolute; top: .75rem; right: .75rem; border: none; background: none; font-size: 1.2rem; cursor: pointer; }
+.modal-body ul { padding-left: 1rem; }
+.modal-body a { color: #06c; }
+@media (min-width: 720px) {
+  .cards { grid-template-columns: repeat(3, 1fr); }
+  .modal-body { width: 640px; height: auto; max-height: 80vh; }
+}
