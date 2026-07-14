@@ -13,7 +13,7 @@ def test_publish_commits_and_pushes(tmp_path):
 
     work = tmp_path / "work"
     work.mkdir()
-    _git(work, "init")
+    _git(work, "init", "--initial-branch=master")
     _git(work, "config", "user.email", "t@t.com")
     _git(work, "config", "user.name", "t")
     _git(work, "remote", "add", "origin", str(remote))
