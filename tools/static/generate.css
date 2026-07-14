@@ -61,14 +61,14 @@ body {
   border-radius: 9px; background: #fff; color: var(--text);
 }
 .mode-toggle {
-  display: inline-flex; align-self: flex-start;
+  display: inline-flex; flex-direction: column; align-self: flex-start;
   border: 1px solid var(--border); border-radius: 9px; overflow: hidden;
 }
 .mode-btn {
   padding: .5rem .8rem; border: none; background: #fff; color: var(--muted);
-  cursor: pointer; font-size: .85rem;
+  cursor: pointer; font-size: .85rem; text-align: left;
 }
-.mode-btn + .mode-btn { border-left: 1px solid var(--border); }
+.mode-btn + .mode-btn { border-top: 1px solid var(--border); }
 .mode-btn--active { background: var(--accent); color: #fff; }
 
 .status-box {
