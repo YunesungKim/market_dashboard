@@ -9,49 +9,68 @@
 <body>
   <header class="app-header">
     <div class="app-header__inner">
-      <h1 class="app-header__title">증시 브리핑 생성 도구</h1>
+      <h1 class="app-header__title">증시 브리핑 도구</h1>
       <button id="settingsBtn" class="btn btn--ghost" type="button">⚙️ 설정</button>
     </div>
   </header>
 
+  <nav class="tabs">
+    <button id="tabGenerate" class="tab tab--active" type="button">증시 브리핑 생성 도구</button>
+    <button id="tabManage" class="tab" type="button">발행된 브리핑 카드 관리</button>
+  </nav>
+
   <main class="container">
-    <section class="search-bar">
-      <span id="modeBadge" class="mode-badge">A · Serper</span>
-      <input id="company" placeholder="기업명 (예: 삼성전자)" />
-      <input id="keyword" placeholder="키워드 (예: HBM)" />
-      <label class="switch"><input type="checkbox" id="useLlm" /> LLM 요약</label>
-      <button id="searchBtn" class="btn" type="button">검색</button>
+    <section id="panelGenerate" class="panel">
+      <section class="search-bar">
+        <div class="mode-toggle">
+          <button id="modeA" class="mode-btn mode-btn--active" type="button">Mode A: Serper API Only</button>
+          <button id="modeB" class="mode-btn" type="button">Mode B: Summarized by LLM</button>
+        </div>
+        <input id="company" placeholder="기업명 (예: 삼성전자)" />
+        <input id="keyword" placeholder="키워드 (예: HBM)" />
+        <button id="searchBtn" class="btn" type="button">검색</button>
+      </section>
+
+      <div id="status" class="status-box" role="status">준비됨</div>
+
+      <section class="board">
+        <div class="board__head">
+          <h2>후보 카드</h2>
+          <button id="publishBtn" class="btn btn--primary" type="button">배포 (<span id="cardCount">0</span>)</button>
+        </div>
+        <div id="cards" class="cards"></div>
+      </section>
     </section>
 
-    <section class="board">
+    <section id="panelManage" class="panel hidden">
       <div class="board__head">
-        <h2>후보 카드</h2>
-        <button id="publishBtn" class="btn btn--primary" type="button">배포 (<span id="cardCount">0</span>)</button>
+        <h2>발행된 브리핑</h2>
+        <div class="manage-actions">
+          <button id="reloadBriefings" class="btn" type="button">불러오기</button>
+          <button id="deleteBriefings" class="btn btn--danger" type="button">선택 삭제 (<span id="delCount">0</span>)</button>
+        </div>
       </div>
-      <div id="cards" class="cards"></div>
+      <div id="manageStatus" class="status-box" role="status">불러오기를 눌러 발행된 브리핑을 확인하세요.</div>
+      <div id="briefingList" class="briefing-list"></div>
     </section>
-    <p id="status" class="status" role="status"></p>
   </main>
 
   <div id="settingsModal" class="modal hidden">
     <div class="modal__body">
       <button id="settingsClose" class="modal__close" type="button" aria-label="닫기">✕</button>
       <h2>설정</h2>
-
       <h3>초기 로딩 테마</h3>
       <div class="theme-head">
         <span>라벨</span><span>검색어</span><span>gl</span><span>hl</span><span>개수</span><span></span>
       </div>
       <div id="themeRows" class="theme-rows"></div>
       <button id="addTheme" class="btn btn--sm" type="button">+ 테마 추가</button>
-
       <h3>LLM 모델 (모드 B)</h3>
       <select id="modelSelect" class="model-select">
         <option value="claude-opus-4-8">claude-opus-4-8</option>
         <option value="claude-sonnet-5">claude-sonnet-5</option>
         <option value="claude-haiku-4-5-20251001">claude-haiku-4-5-20251001</option>
       </select>
-
       <div class="modal__actions">
         <button id="settingsCancel" class="btn" type="button">취소</button>
         <button id="settingsSave" class="btn btn--primary" type="button">저장</button>
