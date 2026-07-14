@@ -1,0 +1,12 @@
+# Ignore personal reference folder
+temp/
+
+# Secrets — 절대 커밋 금지
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
