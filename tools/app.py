@@ -1,4 +1,8 @@
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from flask import Flask, jsonify, request, render_template
 
 from tools.serper_client import search_news, search_market_trends, MARKET_QUERIES

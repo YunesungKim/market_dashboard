@@ -3,17 +3,19 @@ const statusEl = document.getElementById("status");
 
 function setStatus(msg) { statusEl.textContent = msg; }
 
+function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
 function cardHtml(card) {
   const sources = (card.sources || [])
-    .map(s => `<li><a href="${s.url}" target="_blank">${s.title}</a> <span class="meta">${s.source} · ${s.publishedDate}</span></li>`)
+    .map(s => `<li><a href="${esc(s.url)}" target="_blank">${esc(s.title)}</a> <span class="meta">${esc(s.source)} · ${esc(s.publishedDate)}</span></li>`)
     .join("");
   return `
     <div class="card" data-id="${card.cardId}">
-      <h3 contenteditable data-field="title">${card.title || ""}</h3>
+      <h3 contenteditable data-field="title">${esc(card.title || "")}</h3>
       <div class="meta">${card.date} · ${card.generator?.mode || ""}</div>
-      <p contenteditable data-field="summary">${card.summary || ""}</p>
+      <p contenteditable data-field="summary">${esc(card.summary || "")}</p>
       <details><summary>상세/출처</summary>
-        <p contenteditable data-field="detail">${card.detail || ""}</p>
+        <p contenteditable data-field="detail">${esc(card.detail || "")}</p>
         <ul>${sources}</ul>
       </details>
       <button class="del">삭제</button>
@@ -33,19 +35,21 @@ function render(cards) {
 
 async function refresh() {
   const r = await fetch("/api/cards");
+  if (!r.ok) { setStatus("오류가 발생했습니다 (" + r.status + ")"); return; }
   render((await r.json()).cards);
 }
 
 async function loadTrends() {
   setStatus("시장 동향 불러오는 중…");
-  await fetch("/api/trends");
+  const r = await fetch("/api/trends");
+  if (!r.ok) { setStatus("오류가 발생했습니다 (" + r.status + ")"); return; }
   await refresh();
   setStatus("후보 카드 준비 완료");
 }
 
 async function search() {
   setStatus("검색 중…");
-  await fetch("/api/search", {
+  const r = await fetch("/api/search", {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       company: document.getElementById("company").value,
@@ -53,25 +57,29 @@ async function search() {
       mode: document.getElementById("useLlm").checked ? "llm" : "serper",
     }),
   });
+  if (!r.ok) { setStatus("오류가 발생했습니다 (" + r.status + ")"); return; }
   await refresh();
   setStatus("카드 추가됨");
 }
 
 async function saveEdit(id, field, value) {
-  await fetch(`/api/cards/${id}`, {
+  const r = await fetch(`/api/cards/${id}`, {
     method: "PATCH", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ [field]: value }),
   });
+  if (!r.ok) { return; }
 }
 
 async function remove(id) {
-  await fetch(`/api/cards/${id}`, { method: "DELETE" });
+  const r = await fetch(`/api/cards/${id}`, { method: "DELETE" });
+  if (!r.ok) { setStatus("오류가 발생했습니다 (" + r.status + ")"); return; }
   await refresh();
 }
 
 async function publish() {
   setStatus("배포 중…");
   const r = await fetch("/api/publish", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  if (!r.ok) { setStatus("오류가 발생했습니다 (" + r.status + ")"); return; }
   const n = (await r.json()).published;
   await refresh();
   setStatus(`${n}건 배포 완료`);
