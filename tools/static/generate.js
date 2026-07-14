@@ -3,7 +3,11 @@ const statusEl = document.getElementById("status");
 
 function setStatus(msg) { statusEl.textContent = msg; }
 
-function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[c]);
+}
 
 function cardHtml(card) {
   const sources = (card.sources || [])
