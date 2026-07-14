@@ -7,14 +7,40 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header><h1>증시 브리핑 아카이브</h1></header>
-  <main id="cards" class="cards"></main>
+  <header class="app-header">
+    <div class="app-header__inner">
+      <div>
+        <h1 class="app-header__title">증시 브리핑 아카이브</h1>
+        <p class="app-header__sub">국내·해외 증시 동향 기록</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="filters">
+      <label class="filters__field">연도
+        <select id="fYear"><option value="">전체</option></select>
+      </label>
+      <label class="filters__field">월
+        <select id="fMonth"><option value="">전체</option></select>
+      </label>
+      <label class="filters__field">일
+        <select id="fDay"><option value="">전체</option></select>
+      </label>
+      <span class="filters__count" id="count"></span>
+    </div>
+
+    <div id="cards" class="cards"></div>
+    <p id="empty" class="empty hidden">해당 조건의 브리핑이 없습니다.</p>
+  </main>
+
   <div id="modal" class="modal hidden">
-    <div class="modal-body">
-      <button id="closeBtn" class="close">✕</button>
+    <div class="modal__body">
+      <button id="closeBtn" class="modal__close" aria-label="닫기">✕</button>
       <div id="modalContent"></div>
     </div>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>

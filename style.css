@@ -1,18 +1,68 @@
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --border: #e6e8eb;
+  --text: #1a2233;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --accent-weak: #eaf1ff;
+  --radius: 12px;
+  --shadow: 0 1px 2px rgba(16,24,40,.06), 0 4px 12px rgba(16,24,40,.06);
+}
 * { box-sizing: border-box; }
-body { font-family: system-ui, sans-serif; margin: 0; padding: 1rem; background: #fafafa; color: #1a1a1a; }
-header h1 { font-size: 1.3rem; }
-.cards { display: grid; grid-template-columns: 1fr; gap: .75rem; }
-.card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem; cursor: pointer; }
-.card .date { font-size: .8rem; color: #888; }
-.card h2 { font-size: 1.05rem; margin: .3rem 0; }
-.card p { margin: 0; color: #444; }
-.modal { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
-.modal.hidden { display: none; }
-.modal-body { background: #fff; border-radius: 12px; padding: 1.25rem; width: 100%; height: 100%; overflow: auto; position: relative; }
-.close { position: absolute; top: .75rem; right: .75rem; border: none; background: none; font-size: 1.2rem; cursor: pointer; }
-.modal-body ul { padding-left: 1rem; }
-.modal-body a { color: #06c; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+.app-header {
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(255,255,255,.85); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.app-header__inner { max-width: 1080px; margin: 0 auto; padding: .9rem 1rem; }
+.app-header__title { margin: 0; font-size: 1.25rem; letter-spacing: -.01em; }
+.app-header__sub { margin: .15rem 0 0; color: var(--muted); font-size: .85rem; }
+.container { max-width: 1080px; margin: 0 auto; padding: 1rem; }
+.filters {
+  display: flex; flex-wrap: wrap; gap: .6rem; align-items: end;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: .8rem; margin-bottom: 1rem;
+}
+.filters__field { display: flex; flex-direction: column; gap: .25rem; font-size: .8rem; color: var(--muted); }
+.filters__field select {
+  min-width: 96px; padding: .5rem .6rem; font-size: .95rem;
+  border: 1px solid var(--border); border-radius: 8px; background: #fff; color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.filters__count { margin-left: auto; align-self: center; color: var(--muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+.cards { display: grid; grid-template-columns: 1fr; gap: .8rem; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 1rem; cursor: pointer;
+  transition: transform .12s ease, border-color .12s ease;
+}
+.card:hover, .card:focus-visible { transform: translateY(-2px); border-color: var(--accent); outline: none; }
+.card__date { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.card__title { margin: .35rem 0; font-size: 1.05rem; line-height: 1.35; }
+.card__summary { margin: 0; color: #374151; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card__badge {
+  display: inline-block; margin-top: .6rem; padding: .1rem .5rem; font-size: .7rem;
+  text-transform: uppercase; letter-spacing: .04em; color: var(--accent);
+  background: var(--accent-weak); border-radius: 999px;
+}
+.empty { text-align: center; color: var(--muted); padding: 2rem 0; }
+.hidden { display: none; }
+.modal { position: fixed; inset: 0; background: rgba(16,24,40,.5); display: flex; align-items: center; justify-content: center; z-index: 10; }
+.modal__body { background: var(--surface); border-radius: 14px; padding: 1.4rem; width: 100%; height: 100%; overflow: auto; position: relative; }
+.modal__close { position: absolute; top: .8rem; right: .8rem; border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); }
+.modal__body .date { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.modal__body h2 { margin: .3rem 0 .6rem; }
+.modal__body ul { padding-left: 1.1rem; }
+.modal__body a { color: var(--accent); }
 @media (min-width: 720px) {
   .cards { grid-template-columns: repeat(3, 1fr); }
-  .modal-body { width: 640px; height: auto; max-height: 80vh; }
+  .modal__body { width: 640px; height: auto; max-height: 82vh; }
 }
