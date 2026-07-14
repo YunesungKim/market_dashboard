@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>브리핑 생성 도구</title>
+  <link rel="stylesheet" href="/static/generate.css" />
+</head>
+<body>
+  <header><h1>증시 브리핑 생성 도구</h1></header>
+  <section class="search">
+    <input id="company" placeholder="기업명 (예: 삼성전자)" />
+    <input id="keyword" placeholder="키워드 (예: HBM)" />
+    <label><input type="checkbox" id="useLlm" /> LLM 요약(모드 B)</label>
+    <button id="searchBtn">검색 추가</button>
+  </section>
+  <section class="board">
+    <div class="board-head">
+      <h2>후보 카드</h2>
+      <button id="publishBtn">남긴 카드 배포</button>
+    </div>
+    <div id="cards" class="cards"></div>
+  </section>
+  <p id="status" class="status"></p>
+  <script src="/static/generate.js"></script>
+</body>
+</html>
