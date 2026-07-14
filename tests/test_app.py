@@ -25,7 +25,7 @@ def client(tmp_path, monkeypatch):
 
 
 def test_trends_populates_board(client):
-    r = client.get("/api/trends")
+    r = client.post("/api/trends", json={})
     assert r.status_code == 200
     cards = r.get_json()["cards"]
     assert len(cards) == 2  # 미국1 + 한국1 (fixture 기준)
@@ -55,7 +55,7 @@ def test_search_llm_records_resolved_provider(client, monkeypatch):
         def summarize(self, company, keyword, articles):
             return {"title": "T", "summary": "S", "detail": "D"}
 
-    monkeypatch.setattr(app_module, "get_summarizer", lambda provider=None: FakeSummarizer())
+    monkeypatch.setattr(app_module, "get_summarizer", lambda provider=None, model=None: FakeSummarizer())
     r = client.post("/api/search", json={"company": "A", "keyword": "", "mode": "llm"})
     assert r.status_code == 200
     card = r.get_json()["card"]
@@ -86,3 +86,36 @@ def test_publish_writes_and_clears(client):
     assert len(data) == 1
     assert "cardId" not in data[0]
     assert client.get("/api/cards").get_json()["cards"] == []  # 보드 비워짐
+
+
+def test_trends_custom_themes(client, monkeypatch):
+    monkeypatch.setattr(app_module, "search_news",
+                        lambda query, gl="kr", hl="ko", num=10, api_key=None: [dict(ARTICLE) for _ in range(num)])
+    themes = [{"label": "나스닥", "query": "nasdaq", "gl": "us", "hl": "en", "count": 2},
+              {"label": "코스피", "query": "kospi", "gl": "kr", "hl": "ko", "count": 1}]
+    r = client.post("/api/trends", json={"themes": themes})
+    assert r.status_code == 200
+    assert len(r.get_json()["cards"]) == 3  # 2 + 1
+
+
+def test_search_llm_uses_model(client, monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    captured = {}
+
+    class FakeSummarizer:
+        model = "claude-haiku-4-5-20251001"
+
+        def summarize(self, company, keyword, articles):
+            return {"title": "T", "summary": "S", "detail": "D"}
+
+    def fake_get(provider=None, model=None):
+        captured["provider"] = provider
+        captured["model"] = model
+        return FakeSummarizer()
+
+    monkeypatch.setattr(app_module, "get_summarizer", fake_get)
+    r = client.post("/api/search", json={"company": "A", "keyword": "", "mode": "llm",
+                                         "model": "claude-haiku-4-5-20251001"})
+    assert r.status_code == 200
+    assert captured["model"] == "claude-haiku-4-5-20251001"
+    assert r.get_json()["card"]["generator"]["model"] == "claude-haiku-4-5-20251001"

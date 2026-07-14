@@ -14,6 +14,12 @@ from tools.publisher import publish
 from tools.summarizer import get_summarizer
 
 
+DEFAULT_THEMES = [
+    {"label": cfg["label"], "query": cfg["query"], "gl": cfg["gl"], "hl": cfg["hl"], "count": 3}
+    for cfg in MARKET_QUERIES.values()
+]
+
+
 def create_app(briefings_path, repo_dir, board=None):
     app = Flask(__name__)
     app.config["BRIEFINGS_PATH"] = briefings_path
@@ -24,14 +30,17 @@ def create_app(briefings_path, repo_dir, board=None):
     def index():
         return render_template("index.html")
 
-    @app.get("/api/trends")
+    @app.post("/api/trends")
     def trends():
-        data = search_market_trends(top_n=3)
+        body = request.get_json(force=True, silent=True) or {}
+        themes = body.get("themes") or DEFAULT_THEMES
         cards = []
-        for market, articles in data.items():
-            label = MARKET_QUERIES[market]["label"]
-            for article in articles:
-                b = make_briefing(None, label, [article], mode="serper")
+        for t in themes:
+            count = max(1, int(t.get("count", 3)))
+            articles = search_news(t.get("query", ""), gl=t.get("gl", "kr"),
+                                   hl=t.get("hl", "ko"), num=count)
+            for article in articles[:count]:
+                b = make_briefing(None, t.get("label"), [article], mode="serper")
                 b["title"] = article["title"]  # 개별 기사 제목을 카드 제목으로
                 cards.append(board.add(b))
         return jsonify(cards=cards)
@@ -46,7 +55,8 @@ def create_app(briefings_path, repo_dir, board=None):
         articles = search_news(query)
         if mode == "llm":
             provider = body.get("provider") or os.environ.get("LLM_PROVIDER", "claude")
-            summarizer = get_summarizer(provider=provider)
+            model = body.get("model") or None
+            summarizer = get_summarizer(provider=provider, model=model)
             summary = summarizer.summarize(company, keyword, articles)
             b = make_briefing(company, keyword, articles, mode="llm",
                               provider=provider,
