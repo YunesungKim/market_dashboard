@@ -8,9 +8,14 @@ function esc(s) {
   })[c]);
 }
 
+function safeUrl(u) {
+  const s = String(u == null ? "" : u).trim();
+  return /^https?:\/\//i.test(s) ? s : "#";
+}
+
 function openDetail(b) {
   const sources = (b.sources || [])
-    .map(s => `<li><a href="${esc(s.url)}" target="_blank">${esc(s.title)}</a> — ${esc(s.source)} · ${esc(s.publishedDate)}</li>`)
+    .map(s => `<li><a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a> — ${esc(s.source)} · ${esc(s.publishedDate)}</li>`)
     .join("");
   modalContent.innerHTML = `
     <div class="date">${esc(b.date)}</div>

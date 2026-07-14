@@ -9,9 +9,14 @@ function esc(s) {
   })[c]);
 }
 
+function safeUrl(u) {
+  const s = String(u == null ? "" : u).trim();
+  return /^https?:\/\//i.test(s) ? s : "#";
+}
+
 function cardHtml(card) {
   const sources = (card.sources || [])
-    .map(s => `<li><a href="${esc(s.url)}" target="_blank">${esc(s.title)}</a> <span class="meta">${esc(s.source)} · ${esc(s.publishedDate)}</span></li>`)
+    .map(s => `<li><a href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener noreferrer">${esc(s.title)}</a> <span class="meta">${esc(s.source)} · ${esc(s.publishedDate)}</span></li>`)
     .join("");
   return `
     <div class="card" data-id="${card.cardId}">
