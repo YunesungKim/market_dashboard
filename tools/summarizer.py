@@ -24,10 +24,10 @@ class ClaudeSummarizer(Summarizer):
         prompt = _build_prompt(company, keyword, articles)
         resp = self.client.messages.create(
             model=self.model,
-            max_tokens=1024,
+            max_tokens=2048,
             messages=[{"role": "user", "content": prompt}],
         )
-        return _parse_summary(resp.content[0].text)
+        return _parse_summary(_response_text(resp))
 
 
 def get_summarizer(provider=None, **kwargs):
@@ -45,6 +45,12 @@ def _build_prompt(company, keyword, articles):
         '반드시 아래 JSON만 출력하라(추가 텍스트 금지):\n'
         '{"title": "...", "summary": "1~2문장 핵심 요약", "detail": "상세 본문"}'
     )
+
+
+def _response_text(resp):
+    """응답 content에서 텍스트 블록만 골라 합친다 (thinking 블록 등은 제외)."""
+    parts = [b.text for b in resp.content if getattr(b, "type", None) == "text"]
+    return "".join(parts)
 
 
 def _parse_summary(text):
