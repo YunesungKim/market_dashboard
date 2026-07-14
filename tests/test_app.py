@@ -119,3 +119,30 @@ def test_search_llm_uses_model(client, monkeypatch):
     assert r.status_code == 200
     assert captured["model"] == "claude-haiku-4-5-20251001"
     assert r.get_json()["card"]["generator"]["model"] == "claude-haiku-4-5-20251001"
+
+
+def test_publish_selected_only(client):
+    a = client.post("/api/search", json={"company": "A", "keyword": "", "mode": "serper"}).get_json()["card"]["cardId"]
+    b = client.post("/api/search", json={"company": "B", "keyword": "", "mode": "serper"}).get_json()["card"]["cardId"]
+    r = client.post("/api/publish", json={"cardIds": [a]})
+    assert r.get_json()["published"] == 1
+    remaining = client.get("/api/cards").get_json()["cards"]
+    assert [c["cardId"] for c in remaining] == [b]  # 미선택 카드는 보드에 남음
+
+
+def test_get_briefings(client):
+    client.post("/api/search", json={"company": "A", "keyword": "", "mode": "serper"})
+    client.post("/api/publish", json={})  # cardIds 없음 → 전체 배포(하위호환)
+    r = client.get("/api/briefings")
+    assert r.status_code == 200
+    assert len(r.get_json()["briefings"]) == 1
+
+
+def test_delete_briefings(client):
+    client.post("/api/search", json={"company": "A", "keyword": "", "mode": "serper"})
+    client.post("/api/publish", json={})
+    bid = client.get("/api/briefings").get_json()["briefings"][0]["id"]
+    r = client.post("/api/briefings/delete", json={"ids": [bid]})
+    assert r.status_code == 200
+    assert r.get_json()["removed"] == 1
+    assert client.get("/api/briefings").get_json()["briefings"] == []

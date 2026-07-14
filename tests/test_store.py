@@ -1,5 +1,5 @@
 import json
-from tools.store import load_briefings, append_briefings
+from tools.store import load_briefings, append_briefings, remove_briefings
 
 
 def test_load_missing_file_returns_empty(tmp_path):
@@ -22,3 +22,19 @@ def test_append_writes_utf8_unescaped(tmp_path):
     append_briefings(p, [{"id": "x", "title": "삼성전자"}])
     raw = open(p, encoding="utf-8").read()
     assert "삼성전자" in raw  # ensure_ascii=False
+
+
+def test_remove_briefings(tmp_path):
+    p = str(tmp_path / "briefings.json")
+    append_briefings(p, [{"id": "a", "title": "A"}, {"id": "b", "title": "B"}, {"id": "c", "title": "C"}])
+    removed = remove_briefings(p, ["a", "c"])
+    assert removed == 2
+    import json
+    data = json.loads(open(p, encoding="utf-8").read())
+    assert [x["id"] for x in data] == ["b"]
+
+
+def test_remove_briefings_none_matched(tmp_path):
+    p = str(tmp_path / "briefings.json")
+    append_briefings(p, [{"id": "a", "title": "A"}])
+    assert remove_briefings(p, ["zzz"]) == 0

@@ -30,3 +30,15 @@ def _unique_id(base, used):
     while f"{base}-{n}" in used:
         n += 1
     return f"{base}-{n}"
+
+
+def remove_briefings(path, ids):
+    """briefings.json에서 id가 ids에 속한 항목 제거. 삭제된 개수 반환."""
+    existing = load_briefings(path)
+    ids = set(ids)
+    kept = [b for b in existing if b.get("id") not in ids]
+    removed = len(existing) - len(kept)
+    if removed:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(kept, f, ensure_ascii=False, indent=2)
+    return removed

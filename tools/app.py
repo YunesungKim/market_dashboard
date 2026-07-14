@@ -8,7 +8,7 @@ from werkzeug.exceptions import HTTPException
 
 from tools.serper_client import search_news, search_market_trends, MARKET_QUERIES
 from tools.briefing import make_briefing
-from tools.store import append_briefings
+from tools.store import append_briefings, load_briefings, remove_briefings
 from tools.staging import StagingBoard
 from tools.publisher import publish
 from tools.summarizer import get_summarizer
@@ -83,14 +83,37 @@ def create_app(briefings_path, repo_dir, board=None):
 
     @app.post("/api/publish")
     def publish_cards():
-        cards = [{k: v for k, v in c.items() if k != "cardId"} for c in board.list()]
-        if not cards:
+        body = request.get_json(force=True, silent=True) or {}
+        ids = body.get("cardIds")
+        all_cards = board.list()
+        if ids is None:
+            selected = all_cards
+        else:
+            idset = set(ids)
+            selected = [c for c in all_cards if c["cardId"] in idset]
+        if not selected:
             return jsonify(published=0)
+        cards = [{k: v for k, v in c.items() if k != "cardId"} for c in selected]
         append_briefings(app.config["BRIEFINGS_PATH"], cards)
         publish(app.config["REPO_DIR"], ["briefings.json"],
                 f"add {len(cards)} briefing(s)")
-        board.clear()
+        for c in selected:
+            board.delete(c["cardId"])
         return jsonify(published=len(cards))
+
+    @app.get("/api/briefings")
+    def list_briefings():
+        return jsonify(briefings=load_briefings(app.config["BRIEFINGS_PATH"]))
+
+    @app.post("/api/briefings/delete")
+    def delete_briefings():
+        body = request.get_json(force=True, silent=True) or {}
+        ids = body.get("ids") or []
+        removed = remove_briefings(app.config["BRIEFINGS_PATH"], ids)
+        if removed:
+            publish(app.config["REPO_DIR"], ["briefings.json"],
+                    f"remove {removed} briefing(s)")
+        return jsonify(removed=removed)
 
     @app.errorhandler(Exception)
     def handle_unexpected(e):
