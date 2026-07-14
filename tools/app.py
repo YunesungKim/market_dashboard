@@ -4,6 +4,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, jsonify, request, render_template
+from werkzeug.exceptions import HTTPException
 
 from tools.serper_client import search_news, search_market_trends, MARKET_QUERIES
 from tools.briefing import make_briefing
@@ -44,10 +45,11 @@ def create_app(briefings_path, repo_dir, board=None):
         query = " ".join(x for x in (company, keyword) if x) or "증시"
         articles = search_news(query)
         if mode == "llm":
-            summarizer = get_summarizer(provider=body.get("provider"))
+            provider = body.get("provider") or os.environ.get("LLM_PROVIDER", "claude")
+            summarizer = get_summarizer(provider=provider)
             summary = summarizer.summarize(company, keyword, articles)
             b = make_briefing(company, keyword, articles, mode="llm",
-                              provider=body.get("provider") or "claude",
+                              provider=provider,
                               model=getattr(summarizer, "model", None), summary=summary)
         else:
             b = make_briefing(company, keyword, articles, mode="serper")
@@ -80,6 +82,12 @@ def create_app(briefings_path, repo_dir, board=None):
         board.clear()
         return jsonify(published=len(cards))
 
+    @app.errorhandler(Exception)
+    def handle_unexpected(e):
+        if isinstance(e, HTTPException):
+            return e
+        return jsonify(error=str(e)), 500
+
     return app
 
 
@@ -91,4 +99,4 @@ if __name__ == "__main__":
         briefings_path=os.path.join(repo_dir, "briefings.json"),
         repo_dir=repo_dir,
     )
-    app.run(port=5000, debug=True)
+    app.run(port=5000, debug=False)

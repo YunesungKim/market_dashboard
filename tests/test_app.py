@@ -46,6 +46,38 @@ def test_edit_and_delete_card(client):
     assert client.patch("/api/cards/nope", json={"title": "x"}).status_code == 404
 
 
+def test_search_llm_records_resolved_provider(client, monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+
+    class FakeSummarizer:
+        model = "claude-sonnet-5"
+
+        def summarize(self, company, keyword, articles):
+            return {"title": "T", "summary": "S", "detail": "D"}
+
+    monkeypatch.setattr(app_module, "get_summarizer", lambda provider=None: FakeSummarizer())
+    r = client.post("/api/search", json={"company": "A", "keyword": "", "mode": "llm"})
+    assert r.status_code == 200
+    card = r.get_json()["card"]
+    assert card["generator"]["mode"] == "llm"
+    assert card["generator"]["provider"] == "claude"
+    assert card["generator"]["model"] == "claude-sonnet-5"
+    assert card["title"] == "T"
+    assert card["summary"] == "S"
+    assert card["detail"] == "D"
+
+
+def test_search_backend_error_returns_json_500(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(app_module, "search_news", boom)
+    r = client.post("/api/search", json={"company": "A", "keyword": "", "mode": "serper"})
+    assert r.status_code == 500
+    assert r.is_json
+    assert "boom" in r.get_json()["error"]
+
+
 def test_publish_writes_and_clears(client):
     client.post("/api/search", json={"company": "A", "keyword": "", "mode": "serper"})
     r = client.post("/api/publish", json={})
