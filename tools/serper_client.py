@@ -27,3 +27,19 @@ def _normalize(item):
         "publishedDate": item.get("date", ""),
         "source": item.get("source", ""),
     }
+
+
+MARKET_QUERIES = {
+    "us": {"query": "US stock market", "gl": "us", "hl": "en", "label": "미국 증시"},
+    "kr": {"query": "한국 증시", "gl": "kr", "hl": "ko", "label": "한국 증시"},
+}
+
+
+def search_market_trends(top_n=3, api_key=None):
+    """미국/한국 시장별 상위 뉴스 top_n건씩 반환."""
+    result = {}
+    for market, cfg in MARKET_QUERIES.items():
+        articles = search_news(cfg["query"], gl=cfg["gl"], hl=cfg["hl"],
+                               num=top_n, api_key=api_key)
+        result[market] = articles[:top_n]
+    return result

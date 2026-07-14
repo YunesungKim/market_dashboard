@@ -1,5 +1,5 @@
 from unittest.mock import patch, MagicMock
-from tools.serper_client import search_news
+from tools.serper_client import search_news, search_market_trends
 
 
 def _fake_response(payload):
@@ -31,3 +31,16 @@ def test_search_news_missing_key_raises():
     with patch.dict("os.environ", {}, clear=True):
         with pytest.raises(RuntimeError):
             search_news("query")
+
+
+def test_search_market_trends_returns_top_n_per_market():
+    def fake_search_news(query, gl="kr", hl="ko", num=10, api_key=None):
+        return [{"title": f"{gl}-{i}", "url": "u", "snippet": "s",
+                 "publishedDate": "", "source": "x"} for i in range(num)]
+
+    with patch("tools.serper_client.search_news", side_effect=fake_search_news):
+        trends = search_market_trends(top_n=3, api_key="k")
+    assert set(trends.keys()) == {"us", "kr"}
+    assert len(trends["us"]) == 3
+    assert len(trends["kr"]) == 3
+    assert trends["us"][0]["title"] == "us-0"
